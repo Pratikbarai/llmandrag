@@ -33,7 +33,7 @@ Discord Bot: Provides daily news updates and historical context directly on Disc
 - Flask
 - requests
 - PyPDF2
-- newspaper3k
+- newspaperk
 - nextcord
 - python-dotenv
 - transformers
