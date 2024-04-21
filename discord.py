@@ -18,15 +18,6 @@ app = Flask(__name__)
 newsapi = NewsApiClient(api_key='e7b521615ce94e409e9aeb416c9b4edd')
 
 
-# /v2/everything
-all_articles = newsapi.get_everything(q='bitcoin',
-                                      sources='bbc-news,the-verge',
-                                      domains='bbc.co.uk,techcrunch.com',
-                                      from_param='2017-12-01',
-                                      to='2017-12-12',
-                                      language='en',
-                                      sort_by='relevancy',
-                                      page=2)
 def fetch_and_extract_articles(query, page_number=1, results_per_page=10):
     articles = fetch_and_extract_articles(query, page_number, results_per_page)
 
@@ -225,15 +216,31 @@ def upsc_current_affairs_interpreter(date):
 
 @app.route('/news', methods=['POST'])
 def news():
+    category = request.form.get('category')
+    author = request.form.get('author')
     date = request.form.get('date')
 
     try:
         target_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-        interpreted_articles = upsc_current_affairs_interpreter(target_date)
     except ValueError:
         return "Invalid date format. Please provide the date in YYYY-MM-DD format."
 
-    return render_template('news.html', articles=interpreted_articles)
+    all_articles = newsapi.get_everything(q=category,
+                                          domains='bbc.co.uk,techcrunch.com',
+                                          from_param=date,
+                                          to=date,
+                                          language='en',
+                                          sort_by='relevancy',
+                                          page=2)
+
+    filtered_articles = [article for article in all_articles['articles'] if article['author'] == author]
+
+    interpreted_articles = upsc_current_affairs_interpreter(target_date)
+
+    # Combine the two lists of articles
+    all_articles = filtered_articles + interpreted_articles
+
+    return render_template('news.html', articles=all_articles)
 
 @bot.event
 async def on_ready():
