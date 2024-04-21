@@ -1,3 +1,4 @@
+import pathway as pw
 from flask import Flask, request, render_template
 import datetime
 import PyPDF2
@@ -11,9 +12,21 @@ from transformers import RagTokenizer, RagSequenceForGeneration
 import threading
 from io import BytesIO
 from transformers import RagSequenceForGeneration
+from newsapi import NewsApiClient
 
 app = Flask(__name__)
+newsapi = NewsApiClient(api_key='e7b521615ce94e409e9aeb416c9b4edd')
 
+
+# /v2/everything
+all_articles = newsapi.get_everything(q='bitcoin',
+                                      sources='bbc-news,the-verge',
+                                      domains='bbc.co.uk,techcrunch.com',
+                                      from_param='2017-12-01',
+                                      to='2017-12-12',
+                                      language='en',
+                                      sort_by='relevancy',
+                                      page=2)
 def fetch_and_extract_articles(query, page_number=1, results_per_page=10):
     articles = fetch_and_extract_articles(query, page_number, results_per_page)
 
